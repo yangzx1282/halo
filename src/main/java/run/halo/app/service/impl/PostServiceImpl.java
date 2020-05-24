@@ -750,6 +750,16 @@ public class PostServiceImpl extends BasePostServiceImpl<Post> implements PostSe
                                         Set<Integer> categoryIds, Set<PostMeta> metas) {
         Assert.notNull(post, "Post param must not be null");
 
+        /**
+         * 当没有设置链接别名时
+         * 将主键id设为别名而不是文章标题 Begain
+         */
+        if (Objects.isNull(post.getId()) || post.getId() == 0) {
+            post = super.createOrUpdateBy(post);
+        }
+        post.setSlug(post.getId().toString());
+        // END
+
         // Create or update post
         post = super.createOrUpdateBy(post);
 
