@@ -85,7 +85,7 @@ public class HaloConst {
     /**
      * 哔哩哔哩视频正则表达式
      */
-    public static final String BILIBILI_VIDEO_REG_PATTERN = "\\[bilibili:(\\d+)\\,(\\d+)\\,(\\d+)\\]";
+    public static final String BILIBILI_VIDEO_REG_PATTERN = "\\[bilibili:(\\d+)\\,(\\d+[%]{0,1})\\,(\\d+[%]{0,1})\\]";
     /**
      * YouTube 视频短代码前缀
      */
@@ -97,7 +97,7 @@ public class HaloConst {
     /**
      * YouTube 视频正则表达式
      */
-    public static final String YOUTUBE_VIDEO_REG_PATTERN = "\\[youtube:(\\w+)\\,(\\d+)\\,(\\d+)\\]";
+    public static final String YOUTUBE_VIDEO_REG_PATTERN = "\\[youtube:(\\w+)\\,(\\d+[%]{0,1})\\,(\\d+[%]{0,1})\\]";
     /**
      * Github Api url for halo-admin release.
      */
