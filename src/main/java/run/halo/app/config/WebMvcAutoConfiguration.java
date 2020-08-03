@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.CacheControl;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -31,6 +32,7 @@ import run.halo.app.security.resolver.AuthenticationArgumentResolver;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static run.halo.app.model.support.HaloConst.FILE_SEPARATOR;
 import static run.halo.app.utils.HaloUtils.*;
@@ -54,8 +56,8 @@ public class WebMvcAutoConfiguration extends WebMvcConfigurationSupport {
     private final HaloProperties haloProperties;
 
     public WebMvcAutoConfiguration(PageableHandlerMethodArgumentResolver pageableResolver,
-                                   SortHandlerMethodArgumentResolver sortResolver,
-                                   HaloProperties haloProperties) {
+            SortHandlerMethodArgumentResolver sortResolver,
+            HaloProperties haloProperties) {
         this.pageableResolver = pageableResolver;
         this.sortResolver = sortResolver;
         this.haloProperties = haloProperties;
@@ -64,16 +66,16 @@ public class WebMvcAutoConfiguration extends WebMvcConfigurationSupport {
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.stream()
-            .filter(c -> c instanceof MappingJackson2HttpMessageConverter)
-            .findFirst()
-            .ifPresent(converter -> {
-                MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) converter;
-                Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.json();
-                JsonComponentModule module = new JsonComponentModule();
-                module.addSerializer(PageImpl.class, new PageJacksonSerializer());
-                ObjectMapper objectMapper = builder.modules(module).build();
-                mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
-            });
+                .filter(c -> c instanceof MappingJackson2HttpMessageConverter)
+                .findFirst()
+                .ifPresent(converter -> {
+                    MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) converter;
+                    Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.json();
+                    JsonComponentModule module = new JsonComponentModule();
+                    module.addSerializer(PageImpl.class, new PageJacksonSerializer());
+                    ObjectMapper objectMapper = builder.modules(module).build();
+                    mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
+                });
     }
 
     @Override
@@ -94,27 +96,28 @@ public class WebMvcAutoConfiguration extends WebMvcConfigurationSupport {
 
         // register /** resource handler.
         registry.addResourceHandler("/**")
-            .addResourceLocations("classpath:/admin/")
-            .addResourceLocations(workDir + "static/");
+                .addResourceLocations("classpath:/admin/")
+                .addResourceLocations(workDir + "static/");
 
         // register /themes/** resource handler.
         registry.addResourceHandler("/themes/**")
-            .addResourceLocations(workDir + "templates/themes/");
+                .addResourceLocations(workDir + "templates/themes/");
 
         String uploadUrlPattern = ensureBoth(haloProperties.getUploadUrlPrefix(), URL_SEPARATOR) + "**";
         String adminPathPattern = ensureSuffix(haloProperties.getAdminPath(), URL_SEPARATOR) + "**";
 
         registry.addResourceHandler(uploadUrlPattern)
-            .addResourceLocations(workDir + "upload/");
+                .setCacheControl(CacheControl.maxAge(7L, TimeUnit.DAYS))
+                .addResourceLocations(workDir + "upload/");
         registry.addResourceHandler(adminPathPattern)
-            .addResourceLocations("classpath:/admin/");
+                .addResourceLocations("classpath:/admin/");
 
         if (!haloProperties.isDocDisabled()) {
             // If doc is enable
             registry.addResourceHandler("swagger-ui.html")
-                .addResourceLocations("classpath:/META-INF/resources/");
+                    .addResourceLocations("classpath:/META-INF/resources/");
             registry.addResourceHandler("/webjars/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+                    .addResourceLocations("classpath:/META-INF/resources/webjars/");
         }
     }
 

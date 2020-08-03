@@ -15,7 +15,6 @@ import run.halo.app.service.ThemeSettingService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Theme controller.
@@ -32,7 +31,7 @@ public class ThemeController {
     private final ThemeSettingService themeSettingService;
 
     public ThemeController(ThemeService themeService,
-                           ThemeSettingService themeSettingService) {
+            ThemeSettingService themeSettingService) {
         this.themeService = themeService;
         this.themeSettingService = themeSettingService;
     }
@@ -45,7 +44,7 @@ public class ThemeController {
 
     @GetMapping
     @ApiOperation("Lists all themes")
-    public Set<ThemeProperty> listAll() {
+    public List<ThemeProperty> listAll() {
         return themeService.getThemes();
     }
 
@@ -70,7 +69,7 @@ public class ThemeController {
     @GetMapping("{themeId}/files/content")
     @ApiOperation("Gets template content by theme id")
     public BaseResponse<String> getContentBy(@PathVariable("themeId") String themeId,
-                                             @RequestParam(name = "path") String path) {
+            @RequestParam(name = "path") String path) {
         return BaseResponse.ok(HttpStatus.OK.getReasonPhrase(), themeService.getTemplateContent(themeId, path));
     }
 
@@ -85,19 +84,19 @@ public class ThemeController {
     @ApiOperation("Updates template content by theme id")
     @DisableOnCondition
     public void updateContentBy(@PathVariable("themeId") String themeId,
-                                @RequestBody ThemeContentParam param) {
+            @RequestBody ThemeContentParam param) {
         themeService.saveTemplateContent(themeId, param.getPath(), param.getContent());
     }
 
     @GetMapping("activation/template/custom/sheet")
     @ApiOperation("Gets custom sheet templates")
-    public Set<String> customSheetTemplate() {
+    public List<String> customSheetTemplate() {
         return themeService.listCustomTemplates(themeService.getActivatedThemeId(), ThemeService.CUSTOM_SHEET_PREFIX);
     }
 
     @GetMapping("activation/template/custom/post")
     @ApiOperation("Gets custom post templates")
-    public Set<String> customPostTemplate() {
+    public List<String> customPostTemplate() {
         return themeService.listCustomTemplates(themeService.getActivatedThemeId(), ThemeService.CUSTOM_POST_PREFIX);
     }
 
@@ -146,7 +145,7 @@ public class ThemeController {
     @PostMapping("{themeId}/settings")
     @ApiOperation("Saves theme settings")
     public void saveSettingsBy(@PathVariable("themeId") String themeId,
-                               @RequestBody Map<String, Object> settings) {
+            @RequestBody Map<String, Object> settings) {
         themeSettingService.save(settings, themeId);
     }
 
@@ -166,7 +165,7 @@ public class ThemeController {
     @PutMapping("upload/{themeId}")
     @ApiOperation("Upgrades theme by file")
     public ThemeProperty updateThemeByUpload(@PathVariable("themeId") String themeId,
-                                             @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file) {
         return themeService.update(themeId, file);
     }
 
@@ -176,10 +175,39 @@ public class ThemeController {
         return themeService.fetch(uri);
     }
 
+    @PostMapping("fetchingBranches")
+    @ApiOperation("Fetches all branches")
+    public List<ThemeProperty> fetchBranches(@RequestParam("uri") String uri) {
+        return themeService.fetchBranches(uri);
+    }
+
+    @PostMapping("fetchingReleases")
+    @ApiOperation("Fetches all releases")
+    public List<ThemeProperty> fetchReleases(@RequestParam("uri") String uri) {
+        return themeService.fetchReleases(uri);
+    }
+
+    @GetMapping("fetchingRelease")
+    @ApiOperation("Fetches a specific release")
+    public ThemeProperty fetchRelease(@RequestParam("uri") String uri, @RequestParam("tag") String tagName) {
+        return themeService.fetchRelease(uri, tagName);
+    }
+
+    @GetMapping("fetchBranch")
+    @ApiOperation("Fetch specific branch")
+    public ThemeProperty fetchBranch(@RequestParam("uri") String uri, @RequestParam("branch") String branchName) {
+        return themeService.fetchBranch(uri, branchName);
+    }
+
+    @GetMapping("fetchLatestRelease")
+    @ApiOperation("Fetch latest release")
+    public ThemeProperty fetchLatestRelease(@RequestParam("uri") String uri) {
+        return themeService.fetchLatestRelease(uri);
+    }
+
     @PutMapping("fetching/{themeId}")
     @ApiOperation("Upgrades theme by remote")
     public ThemeProperty updateThemeByFetching(@PathVariable("themeId") String themeId) {
-
         return themeService.update(themeId);
     }
 
